@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <PreferenceCategory
+        android:title="Pick sort order: ">
+        <com.lb.material_preferences_library.custom_preferences.ListPreference
+            android:key="@string/pref_sort_key"
+            android:defaultValue="1"
+            app:entries="@array/sortOrder"
+            app:entryValues="@array/sortOrderValues" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

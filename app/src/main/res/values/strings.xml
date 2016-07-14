@@ -1,3 +1,36 @@
 <resources>
-    <string name="app_name">PopularMoviesStage2</string>
+    <string name="app_name">PopularMoviesStage1</string>
+    <string name="popular_movies">Popular Movies</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_movie_detail">Movie Details</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="synopsis">Synopsis: </string>
+    <string name="no_synopsis">No synopsis provided.</string>
+
+
+    <string name="id_json">id</string>
+    <string name="popularity_json">popularity</string>
+    <string name="title_json">title</string>
+
+
+    <string name="pref_sort_key" translatable="false">sort</string>
+    <string name="pref_sort_rating" translatable="false">vote_average.desc</string>
+    <string name="pref_sort_popularity" translatable="false">popularity.desc</string>
+    <string name="pref_sort_rating_label">By rating</string>
+    <string name="pref_sort_popularity_label">By popularity</string>
+    <string name="pref_sort_default" translatable="false">@string/pref_sort_popularity</string>
+
+    <string name="details">Details</string>
+    <string name="release_date">Release Date: </string>
+    <string name="vote_average">Vote Average: </string>
+
+    <string name="sort_by_popularity">Sort by Most Popular</string>
+    <string name="sort_by_rating">Sort by Highest Rated</string>
+    <string name="synopsis_json">overview</string>
+    <string name="rating_json">vote_average</string>
+    <string name="release_date_json">release_date</string>
+    <string name="poster_path_json">poster_path</string>
+    <string name="connection_error">Error with internet connection</string>
+
 </resources>
