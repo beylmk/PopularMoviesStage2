@@ -1,4 +1,4 @@
-package practice.maddie.popularmoviesstage2;
+package practice.maddie.popularmoviesstage2.Model;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,6 +26,7 @@ public class Movie {
     private String overview;
     private String release_date;
     private Bitmap bitmap;
+    private boolean isFavorite;
 
     public Movie(long id, String title, String poster_path, double vote_average, long popularity, String overview, String release_date) {
         this.id = id;
@@ -36,6 +37,7 @@ public class Movie {
         this.overview = overview;
         this.release_date = release_date;
         this.bitmap = getPosterBitmapFromString(poster_path);
+        this.isFavorite = false;
     }
 
     public long getId() {
@@ -132,6 +134,12 @@ public class Movie {
 
     public void setBitmap(Bitmap bitmap) {
         this.bitmap = bitmap;
+    }
+
+    public boolean getIsFavorite() { return isFavorite; }
+
+    public void setIsFavorite(boolean isFavorite) {
+        this.isFavorite = isFavorite;
     }
 
     public String toString() {

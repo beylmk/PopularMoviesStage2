@@ -1,4 +1,4 @@
-package practice.maddie.popularmoviesstage2;
+package practice.maddie.popularmoviesstage2.Model;
 
 import android.util.Log;
 
@@ -13,43 +13,43 @@ import java.util.List;
 /**
  * Created by rfl518 on 7/13/16.
  */
-public class MovieResponse {
+public class TrailerResponse {
 
-    private static String LOG_TAG = MovieResponse.class.getSimpleName();
+    private static String LOG_TAG = TrailerResponse.class.getSimpleName();
 
     @SerializedName("results")
-    private List<Movie> results;
+    private List<Trailer> results;
 
-    public MovieResponse() {
+    public TrailerResponse() {
         results = new ArrayList();
     }
 
-    public List<Movie> getMovies() {
+    public List<Trailer> getTrailers() {
         return results;
     }
 
     public String toString() {
         String result = "";
-        for (Movie movie : results) {
-            result += movie.toString();
+        for (Trailer trailer : results) {
+            result += trailer.toString();
         }
         return result;
     }
 
-    public static MovieResponse parseJSON(String response) {
+    public static TrailerResponse parseJSON(String response) {
 
         Log.d(LOG_TAG, "in parseJSON");
         Gson gson = new GsonBuilder().create();
 
         try
         {
-            MovieResponse movieResponse = gson.fromJson(response, MovieResponse.class);
-            return movieResponse;
+            TrailerResponse trailerResponse = gson.fromJson(response, TrailerResponse.class);
+            return trailerResponse;
 
         }
         catch (IllegalStateException | JsonSyntaxException exception) {
             Log.e(MovieResponse.class.getSimpleName(), exception.getMessage());
-            return new MovieResponse();
+            return new TrailerResponse();
         }
     }
 }

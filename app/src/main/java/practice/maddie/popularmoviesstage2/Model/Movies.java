@@ -1,13 +1,9 @@
-package practice.maddie.popularmoviesstage2;
+package practice.maddie.popularmoviesstage2.Model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import practice.maddie.popularmoviesstage2.Movie;
-import practice.maddie.popularmoviesstage2.MovieResponse;
 
 /**
  * Created by rfl518 on 1/18/16.

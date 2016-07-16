@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,11 +21,9 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
-import practice.maddie.popularmoviesstage2.Constants;
-import practice.maddie.popularmoviesstage2.Movie;
-import practice.maddie.popularmoviesstage2.MovieDetailActivity;
-import practice.maddie.popularmoviesstage2.MovieResponse;
-import practice.maddie.popularmoviesstage2.R;
+import practice.maddie.popularmoviesstage2.Model.Movie;
+import practice.maddie.popularmoviesstage2.Model.MovieResponse;
+import practice.maddie.popularmoviesstage2.Model.Movies;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.GsonConverterFactory;
@@ -46,6 +45,8 @@ public class MoviesFragment extends Fragment {
 
     private View mPageLoading;
 
+    private String mSortPreference;
+
     public MoviesFragment() {
     }
 
@@ -53,18 +54,17 @@ public class MoviesFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSortPreference = Utility.getPreferredSortOrder(getActivity());
 
-        prefs.registerOnSharedPreferenceChangeListener(
+        PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(
                 new SharedPreferences
                         .OnSharedPreferenceChangeListener() {
                     @Override
                     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                        String sortPref = sharedPreferences.getString(getString(R.string.pref_sort_key),
-                                getString(R.string.pref_sort_default));
-                        practice.maddie.popularmoviesstage2.Movies.sortMovies(sortPref);
+                        Movies.sortMovies(mSortPreference);
                     }
                 });
+
     }
 
     @Override
@@ -74,7 +74,7 @@ public class MoviesFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_movies, container, false);
 
         mPageLoading = rootView.findViewById(R.id.page_loading);
-        //mPageLoading.bringToFront();
+        mPageLoading.bringToFront();
 
         mMovieGrid = (GridView) rootView.findViewById(R.id.gridview_movies);
         mMovieGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -92,12 +92,17 @@ public class MoviesFragment extends Fragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        //TODO: only reload when needed
+    public void onResume() {
+        String currentPref = Utility.getPreferredSortOrder(getActivity());
+        if (!TextUtils.isEmpty(currentPref) && !TextUtils.equals(currentPref, mSortPreference)) {
+            Movies.sortMovies(currentPref);
+            mAdapter.notifyDataSetChanged();
+            mSortPreference = currentPref;
+        }
+        //TODO implement loaders and get rid of this
         updateMovies();
+        super.onResume();
     }
-
 
     public void updateMovies() {
 
@@ -148,13 +153,7 @@ public class MoviesFragment extends Fragment {
                 Log.e(LOG_TAG, t.getMessage() + t.getCause());
             }
         });
-
-
     }
-
-
-
-
 
     private class MoviesAdapter extends BaseAdapter {
 

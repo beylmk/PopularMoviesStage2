@@ -2,26 +2,16 @@ package practice.maddie.popularmoviesstage2;
 
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.support.v7.app.ActionBar;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
-import android.text.TextUtils;
-import android.view.MenuItem;
 
-import java.util.List;
+import com.lb.material_preferences_library.AppCompatPreferenceActivity;
+import com.lb.material_preferences_library.custom_preferences.ListPreference;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -34,30 +24,67 @@ import java.util.List;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends AppCompatPreferenceActivity {
+public class SettingsActivity extends AppCompatPreferenceActivity
+        implements Preference.OnPreferenceChangeListener {
+
     @Override
-    public void onCreate(final Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Add 'general' preferences, defined in the XML file
+        addPreferencesFromResource(R.xml.pref_general);
 
-        final ListPreference sortPref = (ListPreference) findPreference(getString(R.string.pref_sort_key));
-        sortPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(preference.getContext());
-                String previousValue = prefs.getString(preference.getKey(), getString(R.string.pref_sort_default));
-                String stringValue = newValue.toString();
+        // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
+        // updated when the preference changes.
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sort_key)));
 
-                int prefIndex = sortPref.findIndexOfValue(stringValue);
-                if (prefIndex >= 0) {
-                    preference.setSummary(sortPref.getEntries()[prefIndex]);
-                }
-                if(previousValue != stringValue) {
-                    prefs.edit().putString(preference.getKey(), stringValue);
-                    finish();
-                    return true;
-                }
-                return false;
+    }
+
+    /**
+     * Attaches a listener so the summary is always updated with the preference value.
+     * Also fires the listener once, to initialize the summary (so it shows up before the value
+     * is changed.)
+     */
+    private void bindPreferenceSummaryToValue(Preference preference) {
+        // Set the listener to watch for value changes.
+        preference.setOnPreferenceChangeListener(this);
+
+        // Trigger the listener immediately with the preference's
+        // current value.
+        onPreferenceChange(preference,
+                PreferenceManager
+                        .getDefaultSharedPreferences(preference.getContext())
+                        .getString(preference.getKey(), ""));
+    }
+
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object value) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(preference.getContext());
+        String previousValue = prefs.getString(preference.getKey(), getString(R.string.pref_sort_default));
+        String stringValue = value.toString();
+
+        if (preference instanceof ListPreference) {
+            // For list preferences, look up the correct display value in
+            // the preference's 'entries' list (since they have separate labels/values).
+            ListPreference listPreference = (ListPreference) preference;
+            int prefIndex = listPreference.findIndexOfValue(stringValue);
+            if (prefIndex >= 0) {
+                preference.setSummary(listPreference.getEntries()[prefIndex]);
             }
-        });
+            if(previousValue != stringValue) {
+                prefs.edit().putString(preference.getKey(), stringValue);
+                finish();
+            }
+        } else {
+            // For other preferences, set the summary to the value's simple string representation.
+            preference.setSummary(stringValue);
+        }
+        return true;
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    @Override
+    public Intent getParentActivityIntent() {
+        return super.getParentActivityIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     }
 }
+

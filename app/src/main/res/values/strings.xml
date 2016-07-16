@@ -33,4 +33,7 @@
     <string name="poster_path_json">poster_path</string>
     <string name="connection_error">Error with internet connection</string>
 
+    <string name="favorite">Favorite</string>
+    <string name="unfavorite">Unfavorite</string>
+
 </resources>

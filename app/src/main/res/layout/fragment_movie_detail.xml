@@ -47,6 +47,14 @@
 
         </LinearLayout>
 
+        <!-- todo: change this to an imagebutton that is a heart-->
+        <Button
+            android:id="@+id/favorite_button"
+            android:text="@string/favorite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+
 
     </LinearLayout>
 
@@ -72,5 +80,12 @@
             android:padding="@dimen/standard_view_padding"/>
 
     </ScrollView>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/trailer_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </android.support.v7.widget.RecyclerView>
 
 </RelativeLayout>
