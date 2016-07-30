@@ -2,9 +2,14 @@ package practice.maddie.popularmoviesstage2;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,12 +22,21 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import practice.maddie.popularmoviesstage2.Model.Movie;
 import practice.maddie.popularmoviesstage2.Model.MovieResponse;
 import practice.maddie.popularmoviesstage2.Model.Movies;
 import practice.maddie.popularmoviesstage2.Model.Trailer;
 import practice.maddie.popularmoviesstage2.Model.TrailerResponse;
+import retrofit.Call;
+import retrofit.Callback;
+import retrofit.GsonConverterFactory;
+import retrofit.Response;
+import retrofit.Retrofit;
+import retrofit.http.GET;
+import retrofit.http.Path;
+import retrofit.http.Query;
 
 public class MovieDetailFragment extends Fragment {
     private final String LOG_TAG = MovieDetailActivity.class.getSimpleName();
@@ -35,6 +49,7 @@ public class MovieDetailFragment extends Fragment {
     private TextView movieSynopsis;
     private Button favoriteButton;
     private RecyclerView trailerRecyclerView;
+    private TrailersAdapter trailersAdapter;
 
     public MovieDetailFragment() {
     }
@@ -75,8 +90,10 @@ public class MovieDetailFragment extends Fragment {
         movieReleaseDate.setText(mMovie.getReleaseDate());
 
         trailerRecyclerView = (RecyclerView) rootView.findViewById(R.id.trailer_recycler_view);
+        trailerRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         setUpFavoriteButton();
+        setUpTrailers();
 
     }
 
@@ -91,25 +108,99 @@ public class MovieDetailFragment extends Fragment {
         });
     }
 
-    private class TrailersAdapter extends BaseAdapter {
+    private void setUpTrailers() {
+        sendTrailersRequest();
 
-        private Context context;
+    }
+
+    private void sendTrailersRequest() {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(Constants.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        long movieId = mMovie.getId();
+
+        TrailerEndpointInterface endpoints = retrofit.create(TrailerEndpointInterface.class);
+        Call<TrailerResponse> call = endpoints.getTrailers(movieId);
+
+        call.enqueue(new Callback<TrailerResponse>() {
+
+            @Override
+            public void onResponse(Response response) {
+
+                if (response == null && response.isSuccess()) {
+                    return;
+                }
+
+                TrailerResponse trailerResponse = (TrailerResponse) response.body();
+
+                if (trailerResponse == null) return;
+
+                trailersAdapter = new TrailersAdapter(trailerResponse);
+                trailerRecyclerView.setAdapter(trailersAdapter);
+
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Toast.makeText(getContext(), R.string.connection_error, Toast.LENGTH_LONG).show();
+//                mPageLoading.setVisibility(View.GONE);
+                Log.e(LOG_TAG, t.getMessage() + t.getCause());
+            }
+        });
+    }
+
+    private class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.TrailerViewHolder> {
 
         private TrailerResponse trailers;
 
-        TrailersAdapter(Context context, TrailerResponse response) {
-            this.context = context;
+        TrailersAdapter(TrailerResponse response) {
             trailers = response;
         }
 
-        @Override
-        public int getCount() {
-            return trailers.getTrailers().size();
+        /**
+         * Cache of the children views for a forecast list item.
+         */
+        public class TrailerViewHolder extends RecyclerView.ViewHolder {
+
+            public final TextView trailerNumber;
+
+            public final Button launchButton;
+
+            public TrailerViewHolder(View itemView) {
+                super(itemView);
+                trailerNumber = (TextView) itemView.findViewById(R.id.trailer_number);
+                launchButton = (Button) itemView.findViewById(R.id.launch_button);
+            }
         }
 
         @Override
-        public Trailer getItem(int position) {
-            return trailers.getTrailers().get(position);
+        public TrailerViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+                LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+                View view = inflater.inflate(R.layout.list_item_trailer, viewGroup, false);
+                return new TrailerViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(TrailerViewHolder holder, int position) {
+            final Trailer trailer = trailers.getTrailers().get(position);
+            TextView trailerNumber = holder.trailerNumber;
+            Button launchButton = holder.launchButton;
+
+            trailerNumber.setText("Trailer " + (position + 1));
+            launchButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.YOUTUBE_URL + trailer.getKey()));
+                    startActivity(intent);
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return trailers.getTrailers().size();
         }
 
         @Override
@@ -117,39 +208,14 @@ public class MovieDetailFragment extends Fragment {
             return position;
         }
 
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View gridItem;
-
-            Trailer tempTrailer = trailers.getTrailers().get(position);
-
-            if (convertView == null) {
-                gridItem = LayoutInflater.from(context).inflate(R.layout.list_item_trailer, parent, false);
-            } else {
-                gridItem = convertView;
-            }
-
-            TextView trailerTitle = (TextView) convertView.findViewById(R.id.trailer_title);
-            trailerTitle.setText("Trailer " + position);
-
-            return gridItem;
-        }
-
-        public void clear() {
-            trailers.getTrailers().clear();
-        }
-
-        public void add(Trailer trailer) {
-            trailers.getTrailers().add(trailer);
-        }
-
-        public void addAll(TrailerResponse inTrailers) {
-            for (Trailer trailer : inTrailers.getTrailers()) {
-                add(trailer);
-            }
-        }
 
     }
 
+    public interface TrailerEndpointInterface {
+
+        @GET(Constants.TRAILERS_URL)
+        Call<TrailerResponse> getTrailers(@Path("id") long movieId);
+
+    }
 
 }

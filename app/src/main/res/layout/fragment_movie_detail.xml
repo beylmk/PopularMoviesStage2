@@ -1,91 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <LinearLayout
-        android:id="@+id/movie_details_info_container"
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <ImageView
-            android:id="@+id/movie_details_poster_imageview"
-            android:paddingRight="@dimen/standard_view_padding"
-            android:layout_height="match_parent"
-            android:layout_width="wrap_content"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:id="@+id/movie_details_info_container"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-            <TextView
-                android:id="@+id/movie_details_release_date"
+            <ImageView
+                android:id="@+id/movie_details_poster_imageview"
+                android:paddingRight="@dimen/standard_view_padding"
+                android:layout_height="match_parent"
+                android:layout_width="wrap_content"/>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/release_date"
-                android:textStyle="bold"/>
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/movie_details_release_date_textview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                <TextView
+                    android:id="@+id/movie_details_release_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/release_date"
+                    android:textStyle="bold"/>
 
-            <TextView
-                android:id="@+id/movie_details_vote_average"
+                <TextView
+                    android:id="@+id/movie_details_release_date_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/movie_details_vote_average"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/vote_average"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/movie_details_vote_average_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+
+            </LinearLayout>
+
+            <!-- todo: change this to an imagebutton that is a heart-->
+            <Button
+                android:id="@+id/favorite_button"
+                android:text="@string/favorite"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/vote_average"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:id="@+id/movie_details_vote_average_textview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                />
 
 
         </LinearLayout>
 
-        <!-- todo: change this to an imagebutton that is a heart-->
-        <Button
-            android:id="@+id/favorite_button"
-            android:text="@string/favorite"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
-
-
-    </LinearLayout>
-
-
-    <TextView
-        android:id="@+id/movie_details_synopsis"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:text="@string/synopsis"
-        android:padding="@dimen/standard_view_padding"
-        android:layout_below="@id/movie_details_info_container"/>
-
-    <ScrollView android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/movie_details_synopsis">
         <TextView
             android:id="@+id/movie_details_synopsis_textview"
-            android:layout_below="@id/movie_details_synopsis"
             android:text="@string/no_synopsis"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/standard_view_padding"/>
+            android:padding="@dimen/standard_view_padding"
+            android:layout_below="@id/movie_details_info_container"/>
 
-    </ScrollView>
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/trailer_recycler_view"
+            android:layout_below="@id/movie_details_synopsis_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/trailer_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        </android.support.v7.widget.RecyclerView>
 
-    </android.support.v7.widget.RecyclerView>
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/reviews_recycler_view"
+            android:layout_below="@id/trailer_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-</RelativeLayout>
+        </android.support.v7.widget.RecyclerView>
+
+    </LinearLayout>
+
+</ScrollView>

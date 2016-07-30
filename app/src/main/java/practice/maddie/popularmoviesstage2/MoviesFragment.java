@@ -94,7 +94,7 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onResume() {
         String currentPref = Utility.getPreferredSortOrder(getActivity());
-        if (!TextUtils.isEmpty(currentPref) && !TextUtils.equals(currentPref, mSortPreference)) {
+        if (!TextUtils.isEmpty(currentPref) && !TextUtils.equals(currentPref, mSortPreference) & mAdapter != null) {
             Movies.sortMovies(currentPref);
             mAdapter.notifyDataSetChanged();
             mSortPreference = currentPref;

@@ -45,7 +45,6 @@ public class MovieResponse {
         {
             MovieResponse movieResponse = gson.fromJson(response, MovieResponse.class);
             return movieResponse;
-
         }
         catch (IllegalStateException | JsonSyntaxException exception) {
             Log.e(MovieResponse.class.getSimpleName(), exception.getMessage());
