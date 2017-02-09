@@ -1,8 +1,11 @@
 package practice.maddie.popularmoviesstage2.Model;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
+
+import com.squareup.okhttp.internal.Util;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -10,6 +13,8 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+
+import practice.maddie.popularmoviesstage2.Utility;
 
 /**
  * Created by rfl518 on 7/13/16.
@@ -136,10 +141,18 @@ public class Movie {
         this.bitmap = bitmap;
     }
 
-    public boolean getIsFavorite() { return isFavorite; }
+    public boolean getIsFavorite(Context context) {
+//        if (Utility.getFavoriteMovieArray(context).containsKey(id)) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+        return false;
+    }
 
     public void setIsFavorite(boolean isFavorite) {
-        this.isFavorite = isFavorite;
+
+        //set in array this.isFavorite = isFavorite;
     }
 
     public String toString() {

@@ -21,6 +21,10 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+
+import java.util.HashMap;
+
 import practice.maddie.popularmoviesstage2.Model.Movie;
 import practice.maddie.popularmoviesstage2.Model.MovieResponse;
 import practice.maddie.popularmoviesstage2.Model.Movies;

@@ -35,5 +35,8 @@
             android:label="@string/title_activity_settings">
         </activity>
     </application>
+    <provider
+        android:authorities="practice.maddie.popularmoviesstage2"
+        android:name="practice.maddie.popularmoviesstage2.Data.FavoriteMovieProvider" />
 
 </manifest>

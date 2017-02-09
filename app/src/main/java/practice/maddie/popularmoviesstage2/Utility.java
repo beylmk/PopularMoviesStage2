@@ -4,6 +4,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.google.gson.Gson;
+
+import java.util.HashMap;
+
 /**
  * Created by rfl518 on 7/14/16.
  */

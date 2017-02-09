@@ -19,11 +19,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 
+import practice.maddie.popularmoviesstage2.Data.FavoriteMovieDBHelper;
+import practice.maddie.popularmoviesstage2.Data.FavoriteMovieProvider;
 import practice.maddie.popularmoviesstage2.Model.Movie;
 import practice.maddie.popularmoviesstage2.Model.MovieResponse;
 import practice.maddie.popularmoviesstage2.Model.Movies;
@@ -81,7 +87,6 @@ public class MovieDetailFragment extends Fragment {
         moviePoster = (ImageView) rootView.findViewById(R.id.movie_details_poster_imageview);
         Picasso.with(getContext()).load("http://image.tmdb.org/t/p/w185" + mMovie.getPosterPath()).into(moviePoster);
 
-
         movieRating = (TextView) rootView.findViewById(R.id.movie_details_vote_average_textview);
         movieRating.setText(Double.toString(mMovie.getVoteAverage()));
 
@@ -99,18 +104,25 @@ public class MovieDetailFragment extends Fragment {
 
     private void setUpFavoriteButton() {
         favoriteButton = (Button) rootView.findViewById(R.id.favorite_button);
-        favoriteButton.setText(mMovie.getIsFavorite() ? getString(R.string.unfavorite) : getString(R.string.favorite));
+        favoriteButton.setText(mMovie.getIsFavorite(getActivity()) ? getString(R.string.unfavorite) : getString(R.string.favorite));
         favoriteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(), "button listener", Toast.LENGTH_SHORT);
+                toggleMovieFavorite(mMovie.getIsFavorite(getActivity()) ? true : false);
             }
         });
     }
 
     private void setUpTrailers() {
         sendTrailersRequest();
+    }
 
+    private void toggleMovieFavorite(boolean isFavorite) {
+        if (isFavorite) {
+            FavoriteMovieDBHelper.removeFavoriteMovie(mMovie.getId(), getActivity());
+        } else {
+            FavoriteMovieDBHelper.addFavoriteMovie(mMovie.getId(), getActivity());
+        }
     }
 
     private void sendTrailersRequest() {
@@ -135,7 +147,7 @@ public class MovieDetailFragment extends Fragment {
 
                 TrailerResponse trailerResponse = (TrailerResponse) response.body();
 
-                if (trailerResponse == null) return;
+                if (trailerResponse.getTrailers() == null) return;
 
                 trailersAdapter = new TrailersAdapter(trailerResponse);
                 trailerRecyclerView.setAdapter(trailersAdapter);
