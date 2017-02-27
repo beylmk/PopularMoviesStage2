@@ -1,14 +1,19 @@
 package practice.maddie.popularmoviesstage2;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -28,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 
+import practice.maddie.popularmoviesstage2.Data.FavoriteMovieContract;
 import practice.maddie.popularmoviesstage2.Data.FavoriteMovieDBHelper;
 import practice.maddie.popularmoviesstage2.Data.FavoriteMovieProvider;
 import practice.maddie.popularmoviesstage2.Model.Movie;
@@ -45,24 +52,35 @@ import retrofit.http.Path;
 import retrofit.http.Query;
 
 public class MovieDetailFragment extends Fragment {
+
     private final String LOG_TAG = MovieDetailActivity.class.getSimpleName();
 
     private Movie mMovie;
+
     private View rootView;
+
     private ImageView moviePoster;
+
     private TextView movieRating;
+
     private TextView movieReleaseDate;
+
     private TextView movieSynopsis;
+
     private Button favoriteButton;
+
     private RecyclerView trailerRecyclerView;
+
     private TrailersAdapter trailersAdapter;
+
+    private boolean isFavorite = false;
 
     public MovieDetailFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+        Bundle savedInstanceState) {
 
         rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
 
@@ -97,18 +115,30 @@ public class MovieDetailFragment extends Fragment {
         trailerRecyclerView = (RecyclerView) rootView.findViewById(R.id.trailer_recycler_view);
         trailerRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        setUpFavoriteButton();
+        setUpFavoriteButton(getActivity());
         setUpTrailers();
 
     }
 
-    private void setUpFavoriteButton() {
+    private void setUpFavoriteButton(Context context) {
         favoriteButton = (Button) rootView.findViewById(R.id.favorite_button);
-        favoriteButton.setText(mMovie.getIsFavorite(getActivity()) ? getString(R.string.unfavorite) : getString(R.string.favorite));
+
+        Cursor movieCursor = context.getContentResolver().query(
+            FavoriteMovieContract.FavoritesEntry.buildFavoriteMovieUri(mMovie.getId()),
+            new String[]{FavoriteMovieContract.FavoritesEntry.COLUMN_ID},
+            FavoriteMovieContract.FavoritesEntry.COLUMN_ID + " = ?",
+            new String[]{Long.toString(mMovie.getId())},
+            null);
+
+        if (movieCursor != null && movieCursor.moveToFirst()) {
+            isFavorite = true;
+        }
+
+        favoriteButton.setText(isFavorite ? getString(R.string.unfavorite) : getString(R.string.favorite));
         favoriteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleMovieFavorite(mMovie.getIsFavorite(getActivity()) ? true : false);
+                toggleMovieFavorite();
             }
         });
     }
@@ -117,19 +147,121 @@ public class MovieDetailFragment extends Fragment {
         sendTrailersRequest();
     }
 
-    private void toggleMovieFavorite(boolean isFavorite) {
+    private void toggleMovieFavorite() {
         if (isFavorite) {
-            FavoriteMovieDBHelper.removeFavoriteMovie(mMovie.getId(), getActivity());
+            removeFavoriteMovie(mMovie.getId(), getActivity());
+            isFavorite = false;
+            favoriteButton.setText(R.string.favorite);
         } else {
-            FavoriteMovieDBHelper.addFavoriteMovie(mMovie.getId(), getActivity());
+            long locationID = addFavoriteMovie(mMovie.getId(), getActivity());
+            String message = "";
+            if (locationID == -1) {
+                message = getString(R.string.error_adding_favorite) + " " + mMovie.getTitle();
+                Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+            } else {
+                favoriteButton.setText(R.string.unfavorite);
+                isFavorite = true;
+            }
         }
+    }
+
+    public static long addFavoriteMovie(long movieId, Context context) {
+
+        Movie movie = Movies.getById(movieId);
+        long locationId;
+
+        // First, check if the location with this city name exists in the db
+        Cursor movieCursor = context.getContentResolver().query(
+            FavoriteMovieContract.FavoritesEntry.buildFavoriteMovieUri(movieId),
+            new String[]{FavoriteMovieContract.FavoritesEntry.COLUMN_ID},
+            FavoriteMovieContract.FavoritesEntry.COLUMN_ID + " = ?",
+            new String[]{Long.toString(movieId)},
+            null);
+
+        if (movieCursor != null && movieCursor.moveToFirst()) {
+            int locationIdIndex = movieCursor.getColumnIndex(FavoriteMovieContract.FavoritesEntry.COLUMN_ID);
+            locationId = movieCursor.getLong(locationIdIndex);
+        } else {
+            // Now that the content provider is set up, inserting rows of data is pretty simple.
+            // First create a ContentValues object to hold the data you want to insert.
+            ContentValues movieValues = new ContentValues();
+
+            // Then add the data, along with the corresponding name of the data type,
+            // so the content provider knows what kind of value is being inserted.
+            movieValues.put(FavoriteMovieContract.FavoritesEntry.COLUMN_ID, movieId);
+            movieValues.put(FavoriteMovieContract.FavoritesEntry.COLUMN_TITLE, movie.getTitle());
+            movieValues.put(FavoriteMovieContract.FavoritesEntry.COLUMN_POSTER_PATH, movie.getPosterPath());
+            movieValues.put(FavoriteMovieContract.FavoritesEntry.COLUMN_RATING, movie.getVoteAverage());
+            movieValues.put(FavoriteMovieContract.FavoritesEntry.COLUMN_RELEASE_DATE, movie.getReleaseDate());
+            movieValues.put(FavoriteMovieContract.FavoritesEntry.COLUMN_SYNOPSIS, movie.getOverview());
+
+            // Finally, insert location data into the database.
+            Uri insertedUri = context.getContentResolver().insert(
+                FavoriteMovieContract.FavoritesEntry.CONTENT_URI,
+                movieValues
+            );
+
+            // The resulting URI contains the ID for the row.  Extract the locationId from the Uri.
+            locationId = ContentUris.parseId(insertedUri);
+        }
+
+        movieCursor.close();
+        // Wait, that worked?  Yes!
+        return locationId;
+    }
+
+    public static long removeFavoriteMovie(long movieId, Context context) {
+
+        long locationId;
+        int numDeleted = 0;
+
+        // First, check if the location with this city name exists in the db
+        Cursor movieCursor = context.getContentResolver().query(
+            FavoriteMovieContract.FavoritesEntry.buildFavoriteMovieUri(movieId),
+            new String[]{FavoriteMovieContract.FavoritesEntry.COLUMN_ID},
+            FavoriteMovieContract.FavoritesEntry.COLUMN_ID + " = ?",
+            new String[]{Long.toString(movieId)},
+            null);
+
+        if (movieCursor != null && movieCursor.moveToFirst()) {
+            int locationIdIndex = movieCursor.getColumnIndex(FavoriteMovieContract.FavoritesEntry.COLUMN_ID);
+            locationId = movieCursor.getLong(locationIdIndex);
+        } else {
+
+            String[] selectionArgs = new String[]{};
+            String selection = "";
+
+            if (!TextUtils.isEmpty(Long.toString(movieId))) {
+                selection = FavoriteMovieProvider.sMovieSelection;
+                selectionArgs = new String[]{Long.toString(movieId)};
+            }
+
+            numDeleted = context.getContentResolver().delete(
+                FavoriteMovieContract.FavoritesEntry.CONTENT_URI,
+                selection,
+                selectionArgs
+            );
+
+        }
+
+        movieCursor.close();
+        // Wait, that worked?  Yes!
+        return numDeleted;
+    }
+
+    public boolean isFavorite() {
+        return isFavorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        isFavorite = favorite;
     }
 
     private void sendTrailersRequest() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(Constants.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+            .baseUrl(Constants.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
 
         long movieId = mMovie.getId();
 
@@ -147,7 +279,9 @@ public class MovieDetailFragment extends Fragment {
 
                 TrailerResponse trailerResponse = (TrailerResponse) response.body();
 
-                if (trailerResponse.getTrailers() == null) return;
+                if (trailerResponse.getTrailers() == null) {
+                    return;
+                }
 
                 trailersAdapter = new TrailersAdapter(trailerResponse);
                 trailerRecyclerView.setAdapter(trailersAdapter);
@@ -189,9 +323,9 @@ public class MovieDetailFragment extends Fragment {
 
         @Override
         public TrailerViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-                LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
-                View view = inflater.inflate(R.layout.list_item_trailer, viewGroup, false);
-                return new TrailerViewHolder(view);
+            LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+            View view = inflater.inflate(R.layout.list_item_trailer, viewGroup, false);
+            return new TrailerViewHolder(view);
         }
 
         @Override
