@@ -46,7 +46,7 @@ public class FavoriteMovieContract {
         }
 
         public static Uri buildFavoriteMovieUri(long id) {
-            return CONTENT_URI.buildUpon().appendQueryParameter(COLUMN_ID, Long.toString(id)).build();
+            return CONTENT_URI.buildUpon().appendPath(Long.toString(id)).build();
         }
 
         public static String getIdFromUri(Uri uri) {
