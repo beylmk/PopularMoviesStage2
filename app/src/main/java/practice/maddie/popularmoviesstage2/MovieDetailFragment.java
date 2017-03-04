@@ -40,6 +40,8 @@ import practice.maddie.popularmoviesstage2.Data.FavoriteMovieProvider;
 import practice.maddie.popularmoviesstage2.Model.Movie;
 import practice.maddie.popularmoviesstage2.Model.MovieResponse;
 import practice.maddie.popularmoviesstage2.Model.Movies;
+import practice.maddie.popularmoviesstage2.Model.Review;
+import practice.maddie.popularmoviesstage2.Model.ReviewResponse;
 import practice.maddie.popularmoviesstage2.Model.Trailer;
 import practice.maddie.popularmoviesstage2.Model.TrailerResponse;
 import retrofit.Call;
@@ -72,6 +74,10 @@ public class MovieDetailFragment extends Fragment {
     private RecyclerView trailerRecyclerView;
 
     private TrailersAdapter trailersAdapter;
+
+    private RecyclerView reviewsRecyclerView;
+
+    private ReviewsAdapter reviewsAdapter;
 
     private boolean isFavorite = false;
 
@@ -257,6 +263,46 @@ public class MovieDetailFragment extends Fragment {
         isFavorite = favorite;
     }
 
+    private void sendReviewsRequest() {
+        Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl(Constants.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
+
+        long movieId = mMovie.getId();
+
+        ReviewsEndpointInterface endpoints = retrofit.create(ReviewsEndpointInterface.class);
+        Call<ReviewResponse> call = endpoints.getReviews(movieId);
+
+        call.enqueue(new Callback<ReviewResponse>() {
+
+            @Override
+            public void onResponse(Response response) {
+
+                if (response == null && response.isSuccess()) {
+                    return;
+                }
+
+                ReviewResponse reviewResponse = (ReviewResponse) response.body();
+
+                if (reviewResponse.getReviews() == null) {
+                    return;
+                }
+
+                reviewsAdapter = new ReviewResponse(reviewResponse);
+                reviewsRecyclerView.setAdapter(reviewsAdapter);
+
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Toast.makeText(getContext(), R.string.connection_error, Toast.LENGTH_LONG).show();
+//                mPageLoading.setVisibility(View.GONE);
+                Log.e(LOG_TAG, t.getMessage() + t.getCause());
+            }
+        });
+    }
+
     private void sendTrailersRequest() {
         Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(Constants.BASE_URL)
@@ -357,11 +403,75 @@ public class MovieDetailFragment extends Fragment {
 
     }
 
-    public interface TrailerEndpointInterface {
+    private class ReviewsAdapter extends RecyclerView.Adapter<ReviewsAdapter.ReviewViewHolder> {
 
+        private ReviewResponse reviews;
+
+        ReviewsAdapter(ReviewResponse response) {
+            reviews = response;
+        }
+
+        /**
+         * Cache of the children views for a forecast list item.
+         */
+        public class ReviewViewHolder extends RecyclerView.ViewHolder {
+
+//            public final Button launchButton;
+//
+//            public final TextView trailerNumber;
+
+            public ReviewViewHolder(View itemView) {
+                super(itemView);
+//                trailerNumber = (TextView) itemView.findViewById(R.id.trailer_number);
+//                launchButton = (Button) itemView.findViewById(R.id.launch_button);
+            }
+        }
+
+        @Override
+        public ReviewViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+            View view = inflater.inflate(R.layout.list_item_review, viewGroup, false);
+            return new ReviewViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(ReviewViewHolder holder, int position) {
+            final Review review = reviews.getReviews().get(position);
+//            TextView trailerNumber = holder.trailerNumber;
+//            Button launchButton = holder.launchButton;
+//
+//            trailerNumber.setText("Trailer " + (position + 1));
+//            launchButton.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.YOUTUBE_URL + trailer.getKey()));
+//                    startActivity(intent);
+//                }
+//            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return reviews.getReviews().size();
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+
+    }
+
+    public interface TrailerEndpointInterface {
         @GET(Constants.TRAILERS_URL)
         Call<TrailerResponse> getTrailers(@Path("id") long movieId);
+    }
 
+
+    public interface ReviewsEndpointInterface {
+        @GET(Constants.TRAILERS_URL)
+        Call<ReviewResponse> getReviews(@Path("id") long movieId);
     }
 
 }

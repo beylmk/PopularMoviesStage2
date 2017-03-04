@@ -17,6 +17,8 @@ public class Constants {
 
     public static final String TRAILERS_URL = API_VERSION + "/movie/{id}/videos?" + MOVIE_DB_API_KEY;
 
+    public static final String REVIEWS_URL = API_VERSION + "/movie/{id}/reviews?" + MOVIE_DB_API_KEY;
+
     public static final String YOUTUBE_URL = "http://www.youtube.com/watch?v=";
 
 }
