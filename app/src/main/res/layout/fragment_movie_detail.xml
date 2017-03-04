@@ -73,21 +73,31 @@
             android:padding="@dimen/standard_view_padding"
             android:layout_below="@id/movie_details_info_container"/>
 
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trailer_header"
+                android:textStyle="bold"
+                android:layout_gravity="left"/>
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/trailer_recycler_view"
             android:layout_below="@id/movie_details_synopsis_textview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"/>
 
-        </android.support.v7.widget.RecyclerView>
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reviews_header"
+                android:textStyle="bold"
+                android:layout_gravity="left"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/reviews_recycler_view"
             android:layout_below="@id/trailer_recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-        </android.support.v7.widget.RecyclerView>
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 

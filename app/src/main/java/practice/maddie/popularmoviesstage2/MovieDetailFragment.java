@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -118,12 +119,16 @@ public class MovieDetailFragment extends Fragment {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy");
         movieReleaseDate.setText(mMovie.getReleaseDate());
 
-        trailerRecyclerView = (RecyclerView) rootView.findViewById(R.id.trailer_recycler_view);
-        trailerRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
         setUpFavoriteButton(getActivity());
         setUpTrailers();
+        setUpReviews();
 
+    }
+
+    private void setUpReviews() {
+        reviewsRecyclerView = (RecyclerView) rootView.findViewById(R.id.reviews_recycler_view);
+        reviewsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        sendReviewsRequest();
     }
 
     private void setUpFavoriteButton(Context context) {
@@ -150,6 +155,9 @@ public class MovieDetailFragment extends Fragment {
     }
 
     private void setUpTrailers() {
+        trailerRecyclerView = (RecyclerView) rootView.findViewById(R.id.trailer_recycler_view);
+        trailerRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
         sendTrailersRequest();
     }
 
@@ -285,11 +293,11 @@ public class MovieDetailFragment extends Fragment {
 
                 ReviewResponse reviewResponse = (ReviewResponse) response.body();
 
-                if (reviewResponse.getReviews() == null) {
+                if (reviewResponse.getReviews() == null || reviewResponse.getReviews().size() == 0) {
                     return;
                 }
 
-                reviewsAdapter = new ReviewResponse(reviewResponse);
+                reviewsAdapter = new ReviewsAdapter(reviewResponse);
                 reviewsRecyclerView.setAdapter(reviewsAdapter);
 
             }
@@ -416,14 +424,17 @@ public class MovieDetailFragment extends Fragment {
          */
         public class ReviewViewHolder extends RecyclerView.ViewHolder {
 
-//            public final Button launchButton;
-//
-//            public final TextView trailerNumber;
+            public final ImageButton goToReviewButton;
+
+            public final TextView reviewContent;
+
+            public final TextView reviewAuthor;
 
             public ReviewViewHolder(View itemView) {
                 super(itemView);
-//                trailerNumber = (TextView) itemView.findViewById(R.id.trailer_number);
-//                launchButton = (Button) itemView.findViewById(R.id.launch_button);
+                reviewAuthor = (TextView) itemView.findViewById(R.id.review_author);
+                reviewContent = (TextView) itemView.findViewById(R.id.review_content);
+                goToReviewButton = (ImageButton) itemView.findViewById(R.id.go_to_review_button);
             }
         }
 
@@ -437,17 +448,19 @@ public class MovieDetailFragment extends Fragment {
         @Override
         public void onBindViewHolder(ReviewViewHolder holder, int position) {
             final Review review = reviews.getReviews().get(position);
-//            TextView trailerNumber = holder.trailerNumber;
-//            Button launchButton = holder.launchButton;
-//
-//            trailerNumber.setText("Trailer " + (position + 1));
-//            launchButton.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.YOUTUBE_URL + trailer.getKey()));
-//                    startActivity(intent);
-//                }
-//            });
+            TextView reviewAuthor = holder.reviewAuthor;
+            TextView reviewContent = holder.reviewContent;
+            ImageButton goToReviewButton = holder.goToReviewButton;
+
+            reviewAuthor.setText(getString(R.string.by) + " " + review.getAuthor());
+            reviewContent.setText(review.getContent());
+            goToReviewButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(review.getUrl()));
+                    startActivity(intent);
+                }
+            });
         }
 
         @Override
@@ -470,7 +483,7 @@ public class MovieDetailFragment extends Fragment {
 
 
     public interface ReviewsEndpointInterface {
-        @GET(Constants.TRAILERS_URL)
+        @GET(Constants.REVIEWS_URL)
         Call<ReviewResponse> getReviews(@Path("id") long movieId);
     }
 
