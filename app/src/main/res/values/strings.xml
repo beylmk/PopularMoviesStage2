@@ -9,6 +9,7 @@
     <string name="no_synopsis">No synopsis provided.</string>
     <string name="trailer_header">Trailers</string>
     <string name="reviews_header">Reviews</string>
+    <string name="no_reviews">No Reviews Available</string>
     <string name="by">By </string>
 
 
@@ -20,16 +21,16 @@
     <string name="pref_sort_key" translatable="false">sort</string>
     <string name="pref_sort_rating" translatable="false">vote_average.desc</string>
     <string name="pref_sort_popularity" translatable="false">popularity.desc</string>
-    <string name="pref_sort_rating_label">By rating</string>
-    <string name="pref_sort_popularity_label">By popularity</string>
     <string name="pref_sort_default" translatable="false">@string/pref_sort_popularity</string>
+
+    <string name="pref_show_favorites">Show favorites</string>
 
     <string name="details">Details</string>
     <string name="release_date">Release Date: </string>
     <string name="vote_average">Vote Average: </string>
 
-    <string name="sort_by_popularity">Sort by Most Popular</string>
-    <string name="sort_by_rating">Sort by Highest Rated</string>
+    <string name="sort_by_popularity">Sort by popularity</string>
+    <string name="sort_by_rating">Sort by rating</string>
     <string name="synopsis_json">overview</string>
     <string name="rating_json">vote_average</string>
     <string name="release_date_json">release_date</string>
@@ -40,5 +41,10 @@
     <string name="unfavorite">Unfavorite</string>
     <string name="error_adding_favorite">Error favoriting </string>
     <string name="successfully_added_favorite">Successfully favorited </string>
+    <string name="display_settings">Display Settings</string>
+    <string name="display_favorites">Display Favorites Only</string>
+    <string name="sort_by_label">Sort by</string>
+    <string name="same_selection">Selection already shown</string>
+    <string name="no_favorited_movies">You have no favorited movies</string>
 
 </resources>

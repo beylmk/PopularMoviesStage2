@@ -33,6 +33,8 @@ public class Movie {
     private Bitmap bitmap;
     private boolean isFavorite;
 
+    public Movie() {}
+
     public Movie(long id, String title, String poster_path, double vote_average, long popularity, String overview, String release_date) {
         this.id = id;
         this.title = title;
@@ -139,20 +141,6 @@ public class Movie {
 
     public void setBitmap(Bitmap bitmap) {
         this.bitmap = bitmap;
-    }
-
-    public boolean getIsFavorite(Context context) {
-//        if (Utility.getFavoriteMovieArray(context).containsKey(id)) {
-//            return true;
-//        } else {
-//            return false;
-//        }
-        return false;
-    }
-
-    public void setIsFavorite(boolean isFavorite) {
-
-        //set in array this.isFavorite = isFavorite;
     }
 
     public String toString() {

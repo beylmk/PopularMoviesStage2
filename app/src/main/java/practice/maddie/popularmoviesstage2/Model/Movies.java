@@ -26,6 +26,8 @@ public class Movies {
 
     public static List<Movie> getMovies() { return movies; }
 
+    public static void setMovies(List<Movie> inMovies) { movies = inMovies;}
+
     public static void add(Movie movie) { movies.add(movie); }
 
     public static void addAll(MovieResponse inMovies) {

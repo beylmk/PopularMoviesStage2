@@ -70,6 +70,8 @@ public class MovieDetailFragment extends Fragment {
 
     private TextView movieSynopsis;
 
+    private TextView reviewSectionLabel;
+
     private Button favoriteButton;
 
     private RecyclerView trailerRecyclerView;
@@ -119,6 +121,8 @@ public class MovieDetailFragment extends Fragment {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy");
         movieReleaseDate.setText(mMovie.getReleaseDate());
 
+        reviewSectionLabel = (TextView) rootView.findViewById(R.id.review_section_label);
+
         setUpFavoriteButton(getActivity());
         setUpTrailers();
         setUpReviews();
@@ -157,7 +161,6 @@ public class MovieDetailFragment extends Fragment {
     private void setUpTrailers() {
         trailerRecyclerView = (RecyclerView) rootView.findViewById(R.id.trailer_recycler_view);
         trailerRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
         sendTrailersRequest();
     }
 
@@ -238,9 +241,6 @@ public class MovieDetailFragment extends Fragment {
             null);
 
         if (movieCursor != null && movieCursor.moveToFirst()) {
-            int locationIdIndex = movieCursor.getColumnIndex(FavoriteMovieContract.FavoritesEntry.COLUMN_ID);
-            locationId = movieCursor.getLong(locationIdIndex);
-        } else {
 
             String[] selectionArgs = new String[]{};
             String selection = "";
@@ -256,19 +256,13 @@ public class MovieDetailFragment extends Fragment {
                 selectionArgs
             );
 
+        } else {
+            return 0;
         }
 
         movieCursor.close();
         // Wait, that worked?  Yes!
         return numDeleted;
-    }
-
-    public boolean isFavorite() {
-        return isFavorite;
-    }
-
-    public void setFavorite(boolean favorite) {
-        isFavorite = favorite;
     }
 
     private void sendReviewsRequest() {
@@ -293,10 +287,12 @@ public class MovieDetailFragment extends Fragment {
 
                 ReviewResponse reviewResponse = (ReviewResponse) response.body();
 
-                if (reviewResponse.getReviews() == null || reviewResponse.getReviews().size() == 0) {
+                if (reviewResponse == null || reviewResponse.getReviews() == null || reviewResponse.getReviews().size() == 0) {
+                    reviewSectionLabel.setText(getString(R.string.no_reviews));
                     return;
                 }
 
+                reviewSectionLabel.setText(getString(R.string.reviews_header));
                 reviewsAdapter = new ReviewsAdapter(reviewResponse);
                 reviewsRecyclerView.setAdapter(reviewsAdapter);
 
@@ -333,7 +329,7 @@ public class MovieDetailFragment extends Fragment {
 
                 TrailerResponse trailerResponse = (TrailerResponse) response.body();
 
-                if (trailerResponse.getTrailers() == null) {
+                if (trailerResponse == null || trailerResponse.getTrailers() == null) {
                     return;
                 }
 

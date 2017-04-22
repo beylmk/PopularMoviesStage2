@@ -20,12 +20,12 @@ import practice.maddie.popularmoviesstage2.Model.Movies;
  */
 public class FavoriteMovieProvider extends ContentProvider {
 
-    public final String TAG = this.getClass().getSimpleName();
+    public static final String TAG = FavoriteMovieProvider.class.getSimpleName();
 
     static final int FAVORITES = 100;
     static final int FAVORITE_MOVIE = 101;
 
-    private FavoriteMovieDBHelper mHelper;
+    private static FavoriteMovieDBHelper mHelper;
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
 
@@ -181,7 +181,7 @@ public class FavoriteMovieProvider extends ContentProvider {
         return matcher;
     }
 
-    private Cursor getFavorites(
+    public static Cursor getFavorites(
             Uri uri, String[] projection, String sortOrder) {
 
         Log.v(TAG, "getting favorites from provider");
@@ -192,7 +192,7 @@ public class FavoriteMovieProvider extends ContentProvider {
                 null,
                 null,
                 null,
-                sortOrder
+                null
         );
 
     }
@@ -217,7 +217,7 @@ public class FavoriteMovieProvider extends ContentProvider {
                 selectionArgs,
                 null,
                 null,
-                sortOrder
+                null
         );
     }
 
