@@ -1,5 +1,6 @@
 package practice.maddie.popularmoviesstage2;
 
+import android.app.Activity;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -56,9 +57,9 @@ import retrofit.http.Query;
 
 public class MovieDetailFragment extends Fragment {
 
-    private final String LOG_TAG = MovieDetailActivity.class.getSimpleName();
+    public static final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
 
-    private Movie mMovie;
+    private static Movie mMovie;
 
     private View rootView;
 
@@ -82,9 +83,19 @@ public class MovieDetailFragment extends Fragment {
 
     private ReviewsAdapter reviewsAdapter;
 
+    private TrailerResponse trailers;
+
+    private ReviewResponse reviews;
+
     private boolean isFavorite = false;
 
     public MovieDetailFragment() {
+    }
+
+    public static MovieDetailFragment newInstance(Movie movie) {
+        MovieDetailFragment fragment = new MovieDetailFragment();
+        mMovie = movie;
+        return fragment;
     }
 
     @Override
@@ -92,21 +103,16 @@ public class MovieDetailFragment extends Fragment {
         Bundle savedInstanceState) {
 
         rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
-
-        Intent intent = getActivity().getIntent();
-        long defaultId = 0;
-        if (intent != null && intent.hasExtra("movie Id")) {
-            Long movieId = intent.getLongExtra("movie Id", defaultId);
-            mMovie = Movies.getById(movieId);
-            setUpDetailsUI();
-        }
+        setUpDetailsUI();
 
         return rootView;
     }
 
     private void setUpDetailsUI() {
 
-        getActivity().setTitle(mMovie.getTitle() + " " + getString(R.string.details));
+        if (!MainActivity.getIsTablet()) {
+            getActivity().setTitle(mMovie.getTitle() + " " + getString(R.string.details));
+        }
 
         movieSynopsis = (TextView) rootView.findViewById(R.id.movie_details_synopsis_textview);
         movieSynopsis.setText(mMovie.getOverview());
@@ -180,6 +186,7 @@ public class MovieDetailFragment extends Fragment {
                 isFavorite = true;
             }
         }
+        MainActivity.getMovies();
     }
 
     public static long addFavoriteMovie(long movieId, Context context) {
@@ -281,28 +288,33 @@ public class MovieDetailFragment extends Fragment {
             @Override
             public void onResponse(Response response) {
 
-                if (response == null && response.isSuccess()) {
-                    return;
+                Activity activity = getActivity();
+                if (activity != null && isAdded()) {
+                    if (response == null && response.isSuccess()) {
+                        return;
+                    }
+
+                    reviews = (ReviewResponse) response.body();
+
+                    if (reviews == null || reviews.getReviews() == null || reviews.getReviews().size() == 0) {
+                        reviewSectionLabel.setText(getString(R.string.no_reviews));
+                        return;
+                    }
+
+                    reviewSectionLabel.setText(getString(R.string.reviews_header));
+                    reviewsAdapter = new ReviewsAdapter(reviews);
+                    reviewsRecyclerView.setAdapter(reviewsAdapter);
                 }
-
-                ReviewResponse reviewResponse = (ReviewResponse) response.body();
-
-                if (reviewResponse == null || reviewResponse.getReviews() == null || reviewResponse.getReviews().size() == 0) {
-                    reviewSectionLabel.setText(getString(R.string.no_reviews));
-                    return;
-                }
-
-                reviewSectionLabel.setText(getString(R.string.reviews_header));
-                reviewsAdapter = new ReviewsAdapter(reviewResponse);
-                reviewsRecyclerView.setAdapter(reviewsAdapter);
 
             }
 
             @Override
             public void onFailure(Throwable t) {
-                Toast.makeText(getContext(), R.string.connection_error, Toast.LENGTH_LONG).show();
-//                mPageLoading.setVisibility(View.GONE);
-                Log.e(LOG_TAG, t.getMessage() + t.getCause());
+                Activity activity = getActivity();
+                if (activity != null && isAdded()) {
+                    Toast.makeText(getContext(), R.string.connection_error, Toast.LENGTH_LONG).show();
+                    Log.e(LOG_TAG, t.getMessage() + t.getCause());
+                }
             }
         });
     }
@@ -327,13 +339,13 @@ public class MovieDetailFragment extends Fragment {
                     return;
                 }
 
-                TrailerResponse trailerResponse = (TrailerResponse) response.body();
+                trailers = (TrailerResponse) response.body();
 
-                if (trailerResponse == null || trailerResponse.getTrailers() == null) {
+                if (trailers == null || trailers.getTrailers() == null) {
                     return;
                 }
 
-                trailersAdapter = new TrailersAdapter(trailerResponse);
+                trailersAdapter = new TrailersAdapter(trailers);
                 trailerRecyclerView.setAdapter(trailersAdapter);
 
             }
@@ -482,5 +494,4 @@ public class MovieDetailFragment extends Fragment {
         @GET(Constants.REVIEWS_URL)
         Call<ReviewResponse> getReviews(@Path("id") long movieId);
     }
-
 }

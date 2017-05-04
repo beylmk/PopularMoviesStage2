@@ -52,6 +52,8 @@ public class MoviesFragment extends Fragment {
 
     private GridView mMovieGrid;
 
+    private OnMovieClickListener listener;
+
     public MoviesFragment() {
         mAdapter = new MoviesAdapter();
     }
@@ -81,15 +83,13 @@ public class MoviesFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Movie movie = mAdapter.getItem(position);
 
-                if (MainActivity.getIsTablet()) {
-//                    MainActivity.loadMovieDetailFragment(movie.getId());
-                } else {
-                    Intent intent = new Intent(getActivity(), MovieDetailActivity.class)
-                        .putExtra("movie Id", movie.getId());
-                    startActivity(intent);
-                }
+                //load movie detail fragment
+                listener.onMovieClick(movie.getId());
+
             }
         });
+
+        listener = (OnMovieClickListener) getActivity();
 
         return rootView;
     }

@@ -21,4 +21,12 @@ public class Constants {
 
     public static final String YOUTUBE_URL = "http://www.youtube.com/watch?v=";
 
+    public static final String MOVIE_ID_EXTRA_KEY = "movieId";
+
+    public static final String SELECTED_MOVIE_ID_KEY = "selectedMovieId";
+
+    public static final String REVIEWS_KEY = "reviews";
+
+    public static final String TRAILERS_KEY = "trailers";
+
 }

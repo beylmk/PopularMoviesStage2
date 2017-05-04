@@ -14,16 +14,22 @@ import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 
+import practice.maddie.popularmoviesstage2.Model.Movie;
+import practice.maddie.popularmoviesstage2.Model.Movies;
+
 public class MovieDetailActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
-        if (savedInstanceState == null) {
+
+        Long movieId = getIntent().getLongExtra(Constants.MOVIE_ID_EXTRA_KEY, 0);
+        if (savedInstanceState == null && movieId != 0) {
+            Movie movie = Movies.getById(movieId);
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.movies_fragment_container, new MovieDetailFragment())
-                    .commit();
+                .add(R.id.movie_detail_fragment_container, MovieDetailFragment.newInstance(movie))
+                .commit();
         }
     }
 

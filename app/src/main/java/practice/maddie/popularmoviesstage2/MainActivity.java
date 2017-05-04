@@ -1,5 +1,6 @@
 package practice.maddie.popularmoviesstage2;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 
 import com.facebook.stetho.Stetho;
 
+import practice.maddie.popularmoviesstage2.Model.Movie;
 import practice.maddie.popularmoviesstage2.Model.MovieResponse;
 import practice.maddie.popularmoviesstage2.Model.Movies;
 import retrofit.Call;
@@ -20,9 +22,13 @@ import retrofit.GsonConverterFactory;
 import retrofit.Response;
 import retrofit.Retrofit;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnMovieClickListener {
 
     private MoviesFragment moviesFragment;
+
+    private MovieDetailFragment movieDetailFragment;
+
+    private long selectedMovie = 0;
 
     private static boolean isTablet = false;
 
@@ -38,7 +44,10 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        getMovies();
+        if (Movies.getMovies().size() == 0) {
+            getMovies();
+        }
+
     }
 
     @Override
@@ -111,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
                         return;
 
                     Movies.addAll(movieResponse);
+                    selectedMovie = Movies.get(0).getId();
                     reloadMovieFragment();
                 }
 
@@ -121,27 +131,60 @@ public class MainActivity extends AppCompatActivity {
             });
         } else {
             Movies.setMovies(Utility.getFavorites(this));
+            selectedMovie = Movies.get(0).getId();
             if (Movies.getMovies().size() == 0 ) {
                 Toast.makeText(this, getString(R.string.no_favorited_movies), Toast.LENGTH_LONG).show();
             }
             reloadMovieFragment();
         }
+
     }
 
     private void reloadMovieFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         moviesFragment = MoviesFragment.newInstance();
-        fragmentTransaction.replace(R.id.movies_fragment, moviesFragment);
-        fragmentTransaction.commit();
+        fragmentManager.beginTransaction().replace(R.id.movies_fragment, moviesFragment).commit();
+
+        if (isTablet) {
+            loadMovieDetailFragment(selectedMovie != 0 ? selectedMovie : Movies.get(0).getId());
+        }
     }
 
-    private void loadMovieDetailFragment(long movieId) {
-
+        private void loadMovieDetailFragment(long movieId) {
+        if (movieId != 0) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            movieDetailFragment = MovieDetailFragment.newInstance(Movies.getById(movieId));
+            fragmentManager.beginTransaction().replace(R.id.movie_detail_fragment, movieDetailFragment).commit();
+        }
     }
 
     public static boolean getIsTablet() {
         return isTablet;
+    }
+
+    @Override
+    public void onMovieClick(long id) {
+        selectedMovie = id;
+
+        if (isTablet) {
+            loadMovieDetailFragment(id);
+        } else {
+            Intent intent = new Intent(this, MovieDetailActivity.class);
+            intent.putExtra(Constants.MOVIE_ID_EXTRA_KEY, id);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle onSaveInstanceState) {
+        super.onSaveInstanceState(onSaveInstanceState);
+        onSaveInstanceState.putLong(Constants.SELECTED_MOVIE_ID_KEY, selectedMovie);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle onSaveInstanceState) {
+        super.onRestoreInstanceState(onSaveInstanceState);
+        selectedMovie = onSaveInstanceState.getLong(Constants.SELECTED_MOVIE_ID_KEY);
     }
 
 }

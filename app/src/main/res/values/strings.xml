@@ -5,12 +5,12 @@
     <string name="title_activity_movie_detail">Movie Details</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_settings">Settings</string>
-    <string name="synopsis">Synopsis: </string>
+    <string name="synopsis">Synopsis:</string>
     <string name="no_synopsis">No synopsis provided.</string>
     <string name="trailer_header">Trailers</string>
     <string name="reviews_header">Reviews</string>
     <string name="no_reviews">No Reviews Available</string>
-    <string name="by">By </string>
+    <string name="by">By</string>
 
 
     <string name="id_json">id</string>
@@ -26,8 +26,8 @@
     <string name="pref_show_favorites">Show favorites</string>
 
     <string name="details">Details</string>
-    <string name="release_date">Release Date: </string>
-    <string name="vote_average">Vote Average: </string>
+    <string name="release_date">Release Date:</string>
+    <string name="vote_average">Vote Average:</string>
 
     <string name="sort_by_popularity">Sort by popularity</string>
     <string name="sort_by_rating">Sort by rating</string>
@@ -39,8 +39,8 @@
 
     <string name="favorite">Favorite</string>
     <string name="unfavorite">Unfavorite</string>
-    <string name="error_adding_favorite">Error favoriting </string>
-    <string name="successfully_added_favorite">Successfully favorited </string>
+    <string name="error_adding_favorite">Error favoriting</string>
+    <string name="successfully_added_favorite">Successfully favorited</string>
     <string name="display_settings">Display Settings</string>
     <string name="display_favorites">Display Favorites Only</string>
     <string name="sort_by_label">Sort by</string>
