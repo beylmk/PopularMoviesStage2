@@ -2,6 +2,7 @@ package practice.maddie.popularmoviesstage2;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -61,11 +62,15 @@ public class MainActivity extends AppCompatActivity implements OnMovieClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
 
         String currentSelection = Utility.getPreferredSortOrderLabel(this);
-
         String itemTitle = item.getTitle().toString();
 
         if (TextUtils.equals(currentSelection, itemTitle)) {
-            Toast.makeText(this, getString(R.string.same_selection), Toast.LENGTH_LONG).show();
+            if (!isTablet) {
+                //navigate back to movies grid
+                reloadMovieFragment();
+            } else {
+                Toast.makeText(this, getString(R.string.same_selection), Toast.LENGTH_LONG).show();
+            }
             return false;
         }
 
@@ -93,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements OnMovieClickListe
 
         String sortPref = Utility.getPreferredSortOrder(this);
 
-        if (sortPref != getString(R.string.pref_show_favorites)) {
+        if (!sortPref.equals(getString(R.string.pref_show_favorites))) {
 
             Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(Constants.BASE_URL)
@@ -120,7 +125,9 @@ public class MainActivity extends AppCompatActivity implements OnMovieClickListe
                         return;
 
                     Movies.addAll(movieResponse);
-                    selectedMovie = Movies.get(0).getId();
+                    if (Movies.getMovies() != null && Movies.getMovies().size() > 0) {
+                        selectedMovie = Movies.get(0).getId();
+                    }
                     reloadMovieFragment();
                 }
 
@@ -131,31 +138,42 @@ public class MainActivity extends AppCompatActivity implements OnMovieClickListe
             });
         } else {
             Movies.setMovies(Utility.getFavorites(this));
-            selectedMovie = Movies.get(0).getId();
-            if (Movies.getMovies().size() == 0 ) {
+            if (Movies.getMovies() == null || Movies.getMovies().size() == 0 ) {
+                selectedMovie = 0;
                 Toast.makeText(this, getString(R.string.no_favorited_movies), Toast.LENGTH_LONG).show();
+            } else {
+                //show first movie in details view by default
+                selectedMovie = Movies.get(0).getId();
             }
             reloadMovieFragment();
         }
 
     }
 
-    private void reloadMovieFragment() {
+    public void reloadMovieFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         moviesFragment = MoviesFragment.newInstance();
         fragmentManager.beginTransaction().replace(R.id.movies_fragment, moviesFragment).commit();
 
         if (isTablet) {
-            loadMovieDetailFragment(selectedMovie != 0 ? selectedMovie : Movies.get(0).getId());
+            loadMovieDetailFragment();
         }
     }
 
-        private void loadMovieDetailFragment(long movieId) {
-        if (movieId != 0) {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            movieDetailFragment = MovieDetailFragment.newInstance(Movies.getById(movieId));
-            fragmentManager.beginTransaction().replace(R.id.movie_detail_fragment, movieDetailFragment).commit();
+    private void loadMovieDetailFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (selectedMovie != 0) {
+            movieDetailFragment = MovieDetailFragment.newInstance(Movies.getById(selectedMovie));
+            if (isTablet) {
+                fragmentManager.beginTransaction().replace(R.id.movie_detail_fragment, movieDetailFragment).commit();
+            } else {
+                fragmentManager.beginTransaction().replace(R.id.movies_fragment, movieDetailFragment).addToBackStack(null).commit();
+            }
+        } else {
+            //if no movie selected, make details pane empty
+            fragmentManager.beginTransaction().replace(R.id.movie_detail_fragment, new Fragment()).commit();
         }
+
     }
 
     public static boolean getIsTablet() {
@@ -165,13 +183,14 @@ public class MainActivity extends AppCompatActivity implements OnMovieClickListe
     @Override
     public void onMovieClick(long id) {
         selectedMovie = id;
+        loadMovieDetailFragment();
+    }
 
-        if (isTablet) {
-            loadMovieDetailFragment(id);
-        } else {
-            Intent intent = new Intent(this, MovieDetailActivity.class);
-            intent.putExtra(Constants.MOVIE_ID_EXTRA_KEY, id);
-            startActivity(intent);
+    @Override
+    public void onFavoriteButtonClick() {
+        //update favorite movie grid after change and reload
+        if (Utility.getPreferredSortOrder(this).equals(getString(R.string.pref_show_favorites))) {
+            getMovies();
         }
     }
 

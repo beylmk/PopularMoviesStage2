@@ -88,8 +88,8 @@ public class Movie {
     }
 
     public String getReleaseDate() {
-        if (release_date.isEmpty()) {
-            return null;
+        if (release_date == null || release_date.isEmpty()) {
+            return "";
         }
 
         try {

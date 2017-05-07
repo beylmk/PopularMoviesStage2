@@ -89,6 +89,8 @@ public class MovieDetailFragment extends Fragment {
 
     private boolean isFavorite = false;
 
+    private OnMovieClickListener listener;
+
     public MovieDetailFragment() {
     }
 
@@ -96,6 +98,17 @@ public class MovieDetailFragment extends Fragment {
         MovieDetailFragment fragment = new MovieDetailFragment();
         mMovie = movie;
         return fragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnMovieClickListener) {
+            listener = (OnMovieClickListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                + "must implement OnMovieClickListener");
+        }
     }
 
     @Override
@@ -160,6 +173,7 @@ public class MovieDetailFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 toggleMovieFavorite();
+                listener.onFavoriteButtonClick();
             }
         });
     }
@@ -186,7 +200,6 @@ public class MovieDetailFragment extends Fragment {
                 isFavorite = true;
             }
         }
-        MainActivity.getMovies();
     }
 
     public static long addFavoriteMovie(long movieId, Context context) {

@@ -7,4 +7,6 @@ public interface OnMovieClickListener {
 
     void onMovieClick(long id);
 
+    void onFavoriteButtonClick();
+
 }

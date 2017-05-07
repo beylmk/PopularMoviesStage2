@@ -75,6 +75,10 @@ public class MoviesFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_movies, container, false);
 
+        if (!MainActivity.getIsTablet()) {
+            getActivity().setTitle(getString(R.string.popular_movies));
+        }
+
         mMovieGrid = (GridView) rootView.findViewById(R.id.gridview_movies);
         mMovieGrid.setAdapter(mAdapter);
         mMovieGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
